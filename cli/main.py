@@ -1,4 +1,11 @@
 #!/usr/bin/env python
 
-def start():
-    print "Igor CLI"
+from igor import igor
+import auth
+import machines
+import users
+import permissions
+import ipmi
+
+def main():
+    igor()

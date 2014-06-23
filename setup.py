@@ -5,7 +5,7 @@ try:
 except:
     from distutils.core import setup
 
-dependencies = ['docopt', 'termcolor']
+dependencies = ['click']
 
 setup(
         name='igor',
@@ -18,7 +18,7 @@ setup(
         packages=['cli'],
         entry_points={
             'console_scripts': [
-                'igor=cli.main:start'
+                'igor=cli.main:main'
             ]
         }
 )
