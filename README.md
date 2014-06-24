@@ -14,3 +14,19 @@ source env/bin/activate
 pip install --editable .
 igor
 ```
+
+## Configuration
+
+The Igor API server needs to be provided either via the command-line
+`--igor-server` option, or in the `~/.igorrc` file.
+Here is a sample `~/.igorrc` file:
+
+```
+[igor]
+igor_server = localhost:5000
+```
+
+## Documentation
+
+The best way to get the most current documentation is via the CLI itself:
+`igor --help`
