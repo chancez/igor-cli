@@ -5,7 +5,7 @@ import requests
 from igor import igor
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import RequestException
-from netrc_utils import write_credentials, delete_credentials
+from netrc_utils import get_credentials, write_credentials, delete_credentials
 
 # Authentication commands
 
@@ -58,7 +58,7 @@ def login(config, username, password):
     token = response.json()['token']
     config.username = username
     config.token = token
-    write_credentials(config.server_host, username, token)
+    write_credentials(config.server_host, token, username)
     
     print "Authentication successful."
 
@@ -91,8 +91,9 @@ def token(config):
     eyJhbGciOiJIUzI1NiIsImV4cCI6MTQwMzY0Mjg3NSwiaWF0IjoxNDAzNjQyMjc1fQ.eyJpZCI6MX0.4pQEJ4zd3e0SudoIumxOeM60uvUbgZtCurS9_0AK4Cg
     """
 
-    if config.token:
-        print config.token
+    token = get_credentials(config.server_host)[0]
+    if token:
+        print token
     else:
         print "No logged-in user."
 
@@ -108,7 +109,8 @@ def whoami(config):
     root
     """
 
-    if config.username:
-        print config.username
+    username = get_credentials(config.server_host)[1]
+    if username:
+        print username
     else:
         print "No logged-in user."

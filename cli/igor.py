@@ -3,16 +3,12 @@
 import click
 import ConfigParser
 from os.path import expanduser
-from netrc_utils import get_credentials
 
 class Config(object):
-    def __init__(self, server_url, server_host, server_port,
-                 username, token, verbose):
+    def __init__(self, server_url, server_host, server_port, verbose):
         self.server_url = server_url
         self.server_host = server_host
         self.server_port = server_port
-        self.username = username
-        self.token = token
         self.verbose = verbose
         
 @click.group()
@@ -44,8 +40,4 @@ def igor(ctx, igor_server, verbose):
     server_host = server_url_parts[0]
     server_port = server_url_parts[1]
 
-    # Attempt to read login information from ~/.netrc
-    username, token = get_credentials(server_host)
- 
-    ctx.obj = Config(server_url, server_host, server_port,
-                     username, token, verbose) 
+    ctx.obj = Config(server_url, server_host, server_port, verbose)
