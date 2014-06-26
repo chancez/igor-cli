@@ -117,7 +117,7 @@ def update(config, hostname, fqdn, username, password):
     if fqdn:
         data['fqdn'] = fqdn
     if username:
-        date['username'] = username
+        data['username'] = username
     if password:
         data['password'] = password
 
