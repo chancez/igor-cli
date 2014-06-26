@@ -4,7 +4,6 @@ import click
 import json
 from igor import igor
 from request_utils import make_api_request
-from netrc_utils import get_credentials
 
 # User management commands
 
@@ -22,13 +21,11 @@ def list(config):
 
     \b
     $ igor users list
-    === Available users
     user01
     user02
     """
     response = make_api_request('GET', config, '/users')
 
-    print "=== Available users"
     for user in response.json()['users']:
         print user['username']
 
