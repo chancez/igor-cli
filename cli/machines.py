@@ -16,9 +16,7 @@ def machines(config):
 @machines.command()
 @click.pass_obj
 def list(config):
-    """Lists hostnames of the available machines and
-    the accessible machines (that the currently logged-in user
-    has permission to access).
+    """Lists hostnames of the available machines.
 
     Examples:
 

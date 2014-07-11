@@ -65,7 +65,7 @@ def login(config, username, password):
 @auth.command()
 @click.pass_obj
 def logout(config):
-    """Clear local authentication credentials from ~/.netrc.
+    """Clear local authentication credentials.
     
     Example:
     
@@ -82,7 +82,7 @@ def logout(config):
 @auth.command()
 @click.pass_obj
 def token(config):
-    """Display the API token for the currently logged-in user.
+    """Display the API token.
     
     Example:
     
@@ -100,7 +100,7 @@ def token(config):
 @auth.command()
 @click.pass_obj
 def whoami(config):
-    """Display the username for the currently logged-in user.
+    """Display the username.
     
     Example:
 

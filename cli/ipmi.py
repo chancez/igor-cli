@@ -59,6 +59,7 @@ def power(config, hostname, state):
     $ igor ipmi chassis power --hostname osl01
     on
 
+    \b
     $ igor ipmi chassis power --hostname osl01 --set cycle
     Successfully set osl01 power state to cycle.
     """

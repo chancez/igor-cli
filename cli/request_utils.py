@@ -16,7 +16,7 @@ def make_api_request(method, config, endpoint, **kwargs):
                 print 'See \'igor auth\'.'
             elif response.status_code == requests.codes.forbidden:
                 print 'It appears you don\'t have permission for this resource.',
-                print 'See \'igor machines list\'.'
+                print 'See \'igor permissions\'.'
             else:
                 print 'Server response:', response.json()['message'],
                 print '(HTTP error ' + str(response.status_code) + ')'
