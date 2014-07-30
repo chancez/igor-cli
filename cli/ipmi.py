@@ -348,3 +348,35 @@ def set(config, hostname, channel, command, param):
                                                 + '/alert',
                                                 data=data)
     ipmi_print(response.json())
+
+@ipmi.group()
+@click.pass_obj
+def sel(config):
+    """System event log commands"""
+
+@sel.command()
+@click.option('--hostname', prompt=True,
+                            help='The short hostname for this machine.')
+@click.pass_obj
+def info(config, hostname):
+    """Display system event log information.
+
+    Example:
+
+    \b
+    $ igor ipmi sel info --hostname osl01
+    hostname: osl01
+    supported_cmds: Reserve
+    last_add_time: 1970-01-01 00:00:59
+    free_space: 8144
+    version:
+        compliant: v1.5, v2
+        number: 1.5
+    entries: 3
+    overflow: False
+    last_del_time: 2013-05-10 20:14:10
+    """
+
+    endpoint = '/machines/' + hostname + '/sel'
+    response = make_api_request('GET', config, endpoint)
+    ipmi_print(response.json())
