@@ -79,7 +79,7 @@ def power(config, hostname, state):
     hostname: osl01
 
     \b
-    $ igor ipmi chassis power --hostname osl01 --set cycle
+    $ igor ipmi chassis power --hostname osl01 --state cycle
     power_on: True
     hostname: osl01
     """
@@ -88,9 +88,39 @@ def power(config, hostname, state):
         response = make_api_request('GET', config, '/machines/' + hostname +
                                                    '/chassis/power')
     else:
-        data = json.dumps({'power': state})
+        data = json.dumps({'state': state})
         response = make_api_request('POST', config, '/machines/' + hostname +
                                                  '/chassis/power', data=data)
+    ipmi_print(response.json())
+
+@chassis.command()
+@click.option('--hostname', prompt=True,
+                            help='The short hostname for this machine.')
+@click.option('--state', help='Desired power policy.')
+@click.pass_obj
+def policy(config, hostname, state):
+    """View or set the chassis power policy on the event of power failure.
+
+    Example:
+
+    \b
+    $ igor ipmi chassis policy --hostname osl01
+    policy: always-on
+    hostname: osl01
+
+    \b
+    $ igor ipmi chassis power --hostname osl01 --state always-off
+    policy: always-off
+    hostname: osl01
+    """
+
+    if not state:
+        response = make_api_request('GET', config, '/machines/' + hostname +
+                                                   '/chassis/policy')
+    else:
+        data = json.dumps({'state': state})
+        response = make_api_request('POST', config, '/machines/' + hostname +
+                                                 '/chassis/policy', data=data)
     ipmi_print(response.json())
 
 ## ipmitool sensors list
