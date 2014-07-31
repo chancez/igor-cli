@@ -410,3 +410,35 @@ def time(config, hostname, time):
         response = make_api_request('POST', config, '/machines/' + hostname +
                                                  '/sel/time', data=data)
     ipmi_print(response.json())
+
+@sel.command()
+@click.option('--hostname', prompt=True,
+                            help='The short hostname for this machine.')
+@click.option('--extended', is_flag=True, default=False,
+                            help='Display the extended SEL record list.')
+@click.pass_obj
+def list(config, hostname, extended):
+    """Display the SEL record list.
+
+    Example:
+
+    \b
+    $ igor ipmi sel list --hostname osl01
+    records: 1 | 05/10/2013 | 20:14:10 | Event Logging Disabled #0x72 | Log area
+    reset/cleared | Asserted, 2 |  Pre-Init  |0000000038| Power Supply #0x65 | P
+    ower Supply AC lost | Asserted, 3 |  Pre-Init  |0000000059| Power Supply #0x
+    65 | Power Supply AC lost | Deasserted
+    hostname:osl01
+    \b
+    $ igor ipmi sel list --hostname osl01 --extended
+    records: 1 | 05/10/2013 | 20:14:10 | Event Logging Disabled #0x72 | Log area
+    reset/cleared | Asserted, 2 |  Pre-Init  |0000000038| Power Supply #0x65 | P
+    ower Supply AC lost | Asserted, 3 |  Pre-Init  |0000000059| Power Supply #0x
+    65 | Power Supply AC lost | Deasserted
+    hostname:osl01
+    """
+
+    response = make_api_request('GET', config, '/machines/' + hostname +
+                                               '/sel/records?extended=' +
+                                               str(extended))
+    ipmi_print(response.json())
