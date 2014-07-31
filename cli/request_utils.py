@@ -13,12 +13,11 @@ def make_api_request(method, config, endpoint, **kwargs):
         if response.status_code != requests.codes.ok and \
            response.status_code != requests.codes.created:
             if response.status_code == requests.codes.unauthorized:
-                print 'It appears you haven\'t logged in or your token has \
-                       expired.',
-                print 'See \'igor auth\'.'
+                print 'It appears you haven\'t logged in or your token has',
+                print 'expired. See \'igor auth\'.'
             elif response.status_code == requests.codes.forbidden:
-                print 'It appears you don\'t have permission for this \
-                       resource.',
+                print '''It appears you don\'t have permission for this
+                       resource.''',
                 print 'See \'igor permissions\'.'
             else:
                 print '[',
