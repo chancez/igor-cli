@@ -428,17 +428,39 @@ def list(config, hostname, extended):
     reset/cleared | Asserted, 2 |  Pre-Init  |0000000038| Power Supply #0x65 | P
     ower Supply AC lost | Asserted, 3 |  Pre-Init  |0000000059| Power Supply #0x
     65 | Power Supply AC lost | Deasserted
-    hostname:osl01
+    hostname: osl01
     \b
     $ igor ipmi sel list --hostname osl01 --extended
     records: 1 | 05/10/2013 | 20:14:10 | Event Logging Disabled #0x72 | Log area
     reset/cleared | Asserted, 2 |  Pre-Init  |0000000038| Power Supply #0x65 | P
     ower Supply AC lost | Asserted, 3 |  Pre-Init  |0000000059| Power Supply #0x
     65 | Power Supply AC lost | Deasserted
-    hostname:osl01
+    hostname: osl01
     """
 
     response = make_api_request('GET', config, '/machines/' + hostname +
                                                '/sel/records?extended=' +
                                                str(extended))
+    ipmi_print(response.json())
+
+@sel.command()
+@click.option('--hostname', prompt=True,
+                            help='The short hostname for this machine.')
+@click.pass_obj
+def clear(config, hostname):
+    """Clear the SEL record list.
+
+    Example:
+
+    \b
+    $ igor ipmi sel clear --hostname osl01
+    records: 1 | 07/31/2014 | 05:25:23 | Event Logging Disabled #0x72 | Log area
+    reset/cleared | Asserted
+    hostname: osl01
+    """
+
+    click.confirm('Clear all SEL records for ' + hostname + '?', abort=True)
+
+    response = make_api_request('DELETE', config, '/machines/' + hostname +
+                                                  '/sel/records')
     ipmi_print(response.json())
