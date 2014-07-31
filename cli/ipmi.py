@@ -66,7 +66,7 @@ def info(config, hostname):
 @chassis.command()
 @click.option('--hostname', prompt=True,
                             help='The short hostname for this machine.')
-@click.option('--state', help='(on|off|reset|cycle) Desired power state.')
+@click.option('--state', help='Desired power state.')
 @click.pass_obj
 def power(config, hostname, state):
     """View or set the chassis power.
@@ -379,4 +379,34 @@ def info(config, hostname):
 
     endpoint = '/machines/' + hostname + '/sel'
     response = make_api_request('GET', config, endpoint)
+    ipmi_print(response.json())
+
+@sel.command()
+@click.option('--hostname', prompt=True,
+                            help='The short hostname for this machine.')
+@click.option('--time', help='(YYYY-MM-DD hh:mm:ss) Desired SEL clock time.')
+@click.pass_obj
+def time(config, hostname, time):
+    """Display or set the SEL clock time.
+
+    Example:
+
+    \b
+    $ igor ipmi sel time --hostname osl01
+    hostname: osl01
+    time: 2014-07-31 03:38:01
+
+    \b
+    $ igor ipmi sel time --time '1990-05-22 23:15:50' --hostname osl01
+    hostname: osl01
+    time: 1990-05-22 23:15:50
+    """
+
+    if not time:
+        response = make_api_request('GET', config, '/machines/' + hostname +
+                                                   '/sel/time')
+    else:
+        data = json.dumps({'time': time})
+        response = make_api_request('POST', config, '/machines/' + hostname +
+                                                 '/sel/time', data=data)
     ipmi_print(response.json())
