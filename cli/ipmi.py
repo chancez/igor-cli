@@ -6,7 +6,7 @@ from igor import igor
 from request_utils import make_api_request
 import types
 
-def ipmi_print(data, indent=0):
+def ipmi_print(data, indent=0, composite_list=False):
     if isinstance(data, types.DictType):
         for key, value in data.iteritems():
             for i in xrange(indent):
@@ -17,7 +17,14 @@ def ipmi_print(data, indent=0):
                 print
                 ipmi_print(value, indent+1)
             elif isinstance(value, types.ListType):
-                print ', '.join(value)
+                if not composite_list:
+                    print ', '.join(value)
+                else:
+                    print
+                    for item in value:
+                        ipmi_print(item, indent+1)
+                        print
+                    print
             else:
                 print value
 
@@ -298,19 +305,21 @@ def info(config, hostname, channel):
         endpoint += '/' + str(channel)
     endpoint += '/alert'
     response = make_api_request('GET', config, endpoint)
-    ipmi_print(response.json())
+    ipmi_print(response.json(), composite_list=True)
 
 @alert.command()
 @click.option('--hostname', prompt=True,
                             help='The short hostname for this machine.')
 @click.option('--channel', prompt=True, type=click.INT,
                            help='The lan channel number')
+@click.option('--dest', prompt='Alert destination', type=click.INT,
+                        help='The alert destination channel')
 @click.option('--command', prompt=True,
                            help='The lan command to set')
 @click.option('--param', prompt=True,
                          help='The lan command parameter')
 @click.pass_obj
-def set(config, hostname, channel, command, param):
+def set(config, hostname, channel, dest, command, param):
     """Set lan alert channel information.
 
     For a list of valid commands, visit the ipmitool manpage.
@@ -320,34 +329,61 @@ def set(config, hostname, channel, command, param):
     \b
     $ igor ipmi lan alert set --hostname osl01
     Channel: 1
+    Alert destination: 0
     Command: ipsrc
     Param: static
 
-    auth_type_support: NONE, MD2, MD5, PASSWORD
-    snmp_community_string: 4h519bu64
-    n_802_1q_vlan_priority: 0
-    cipher_suite_priv_max: aaaaaaaaaaaaaaa
-    ip_address_source: Static Address
-    ...
+    alerts:
+        retry_interval: 0
+        number_of_retries: 0
+        alert_gateway: Default
+        alert_mac_address: 00:00:00:00:00:00
+        alert_acknowledge: Unacknowledged
+        alert_ip_address: 0.0.0.0
+        alert_destination: 0
+        destination_type: PET Trap
+
+        retry_interval: 0
+        number_of_retries: 0
+        alert_gateway: Default
+        alert_mac_address: 00:00:00:00:00:00
+        alert_acknowledge: Unacknowledged
+        alert_ip_address: 0.0.0.0
+        alert_destination: 1
+        destination_type: PET Trap
+        ...
 
     \b
-    $ igor ipmi lan alert set --hostname osl01 --channel 1 --command ipsrc \
-                              --param static
+    $ igor ipmi lan alert set --hostname osl01 --channel 1 --dest 0 \
+                              --command ipsrc --param static
 
-    auth_type_support: NONE, MD2, MD5, PASSWORD
-    snmp_community_string: 4h519bu64
-    n_802_1q_vlan_priority: 0
-    cipher_suite_priv_max: aaaaaaaaaaaaaaa
-    ip_address_source: Static Address
-    ...
+    alerts:
+        retry_interval: 0
+        number_of_retries: 0
+        alert_gateway: Default
+        alert_mac_address: 00:00:00:00:00:00
+        alert_acknowledge: Unacknowledged
+        alert_ip_address: 0.0.0.0
+        alert_destination: 0
+        destination_type: PET Trap
+
+        retry_interval: 0
+        number_of_retries: 0
+        alert_gateway: Default
+        alert_mac_address: 00:00:00:00:00:00
+        alert_acknowledge: Unacknowledged
+        alert_ip_address: 0.0.0.0
+        alert_destination: 1
+        destination_type: PET Trap
+        ...
     """
 
-    data = json.dumps({'command': command, 'param': param})
+    data = json.dumps({'dest': dest, 'command': command, 'param': param})
     response = make_api_request('POST', config, '/machines/' + hostname
                                                 + '/lan/' + str(channel)
                                                 + '/alert',
                                                 data=data)
-    ipmi_print(response.json())
+    ipmi_print(response.json(), composite_list=True)
 
 @ipmi.group()
 @click.pass_obj
