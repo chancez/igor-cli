@@ -460,24 +460,17 @@ def list(config, hostname, extended):
 
     \b
     $ igor ipmi sel list --hostname osl01
-    records: 1 | 05/10/2013 | 20:14:10 | Event Logging Disabled #0x72 | Log area
-    reset/cleared | Asserted, 2 |  Pre-Init  |0000000038| Power Supply #0x65 | P
-    ower Supply AC lost | Asserted, 3 |  Pre-Init  |0000000059| Power Supply #0x
-    65 | Power Supply AC lost | Deasserted
-    hostname: osl01
+    1 | 07/31/2014 | 05:25:23 | Event Logging Disabled #0x72 | Log area reset
     \b
     $ igor ipmi sel list --hostname osl01 --extended
-    records: 1 | 05/10/2013 | 20:14:10 | Event Logging Disabled #0x72 | Log area
-    reset/cleared | Asserted, 2 |  Pre-Init  |0000000038| Power Supply #0x65 | P
-    ower Supply AC lost | Asserted, 3 |  Pre-Init  |0000000059| Power Supply #0x
-    65 | Power Supply AC lost | Deasserted
-    hostname: osl01
+    1 | 07/31/2014 | 05:25:23 | Event Logging Disabled #0x72 | Log area reset
     """
 
     response = make_api_request('GET', config, '/machines/' + hostname +
                                                '/sel/records?extended=' +
                                                str(extended))
-    ipmi_print(response.json())
+    for record in response.json()['records']:
+        print record
 
 @sel.command()
 @click.option('--hostname', prompt=True,
@@ -490,13 +483,55 @@ def clear(config, hostname):
 
     \b
     $ igor ipmi sel clear --hostname osl01
-    records: 1 | 07/31/2014 | 05:25:23 | Event Logging Disabled #0x72 | Log area
-    reset/cleared | Asserted
-    hostname: osl01
+    1 | 07/31/2014 | 05:25:23 | Event Logging Disabled #0x72 | Log area
     """
 
     click.confirm('Clear all SEL records for ' + hostname + '?', abort=True)
 
     response = make_api_request('DELETE', config, '/machines/' + hostname +
                                                   '/sel/records')
+    ipmi_print(response.json())
+
+@sel.command()
+@click.option('--hostname', prompt=True,
+                            help='The short hostname for this machine.')
+@click.option('--id', prompt=True, type=click.INT, multiple=True,
+                      help='The SEL record IDs to get')
+@click.pass_obj
+def get(config, hostname, id):
+    """View the SEL entries for the provided record IDs. Unavailable
+    record IDs are not displayed.
+
+    Example:
+
+    \b
+    $ igor ipmi sel get --hostname osl01 --id 1 --id 2
+    1 | 07/31/2014 | 05:25:23 | Event Logging Disabled #0x72 | Log area
+    """
+
+    data = json.dumps({'records': [{'id': i} for i in id]})
+    response = make_api_request('POST', config, '/machines/' + hostname +
+                                                '/sel/records', data=data)
+    for record in response.json()['records']:
+        print record
+
+@sel.command()
+@click.option('--hostname', prompt=True,
+                            help='The short hostname for this machine.')
+@click.option('--id', prompt=True, type=click.INT,
+                      help='The SEL record ID to delete')
+@click.pass_obj
+def get(config, hostname, id):
+    """Delete the SEL entry for the provided record ID.
+
+    Example:
+
+    \b
+    $ igor ipmi sel get --hostname osl01 --id 1
+    hostname: osl01
+    message: Deleted record 1
+    """
+
+    response = make_api_request('DELETE', config, '/machines/' + hostname +
+                                                  '/sel/records/' + id)
     ipmi_print(response.json())
