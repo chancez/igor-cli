@@ -5,6 +5,7 @@ import json
 from igor import igor
 from request_utils import make_api_request
 import types
+from urllib import quote_plus
 
 def ipmi_print(data, indent=0, composite_list=False):
     if isinstance(data, types.DictType):
@@ -130,34 +131,112 @@ def policy(config, hostname, state):
                                                  '/chassis/policy', data=data)
     ipmi_print(response.json())
 
-## ipmitool sensors list
+## ipmitool sensor list
+## ipmitool sensor get
+## ipmitool sensor thresh
 
 @ipmi.group()
 @click.pass_obj
-def sensors(config):
+def sensor(config):
     """Sensors commands"""
 
-@sensors.command()
+@sensor.command()
 @click.option('--hostname', prompt=True,
                             help='The short hostname for this machine.')
 @click.pass_obj
-def list(config, hostname):
+def list(config, hostname, sensor):
     """Display sensor readings.
 
     Example:
 
     \b
-    $ igor ipmi sensors list --hostname osl01
+    $ igor ipmi sensor list --hostname osl01
     Ambient Temp     | 18 degrees C      | ok
     Planar Temp      | disabled          | ns
     CMOS Battery     | 0x00              | ok
+    ...
     """
 
-    # TODO: Not implemented
-    #response = make_api_request('GET', config, '/machines/' + hostname +
-    #                                           '/sensors')
-    #print response.json()
-    pass
+    print 'Fetching all sensor readings, may take a while...'
+    response = make_api_request('GET', config, '/machines/' + hostname +
+                                               '/sensors')
+
+    for record in response.json()['records']:
+        print record
+
+@sensor.command()
+@click.option('--hostname', prompt=True,
+                            help='The short hostname for this machine.')
+@click.option('--sensor', prompt=True, multiple=True,
+                          help='Sensors to retrieve')
+@click.pass_obj
+def get(config, hostname, sensor):
+    """Display details for the specified sensors.
+
+    Example:
+
+    \b
+    $ igor ipmi sensor get --hostname osl01 --sensor 'Ambient Temp' \
+                                            --sensor 'Planar Temp'
+    sensors:
+        sensor_type_(discrete): Critical Interrupt (0x13)
+        entity_id: 34.1 (BIOS)
+        event_message_control: Per-threshold
+        sensor_id: PCIE Fatal Err (0x18)
+        sensor_reading: No Reading
+
+        sensor_type_(discrete): Unknown (0xC3) (0xc3)
+        entity_id: 34.1 (BIOS)
+        event_message_control: Per-threshold
+        sensor_id: Fatal IO Error (0x27)
+        sensor_reading: No Reading
+    """
+
+    print 'Locating sensor records, may take a while...'
+    data = json.dumps({'sensors': [{'id': i} for i in sensor]})
+    response = make_api_request('POST', config, '/machines/' + hostname +
+                                                '/sensors', data=data)
+
+    ipmi_print(response.json(), composite_list=True)
+
+@sensor.command()
+@click.option('--hostname', prompt=True,
+                            help='The short hostname for this machine.')
+@click.option('--sensor', prompt=True,
+                          help='Sensor to set threshold of')
+@click.option('--threshold', prompt=True,
+                             help='Threshold setting')
+@click.option('--value', prompt=True, type=click.FLOAT, multiple=True,
+                         help='Threshold value(s)')
+@click.pass_obj
+def thresh(config, hostname, sensor, threshold, value):
+    """Set thresholds for the specified sensor.
+
+    Example:
+
+    \b
+    $ igor ipmi sensor thresh --hostname osl01 --sensor 'Ambient Temp' \
+                              --threshold 'ucr' --value 47.0
+    message: Locating sensor record 'Ambient Temp'...
+    Setting sensor "Ambient Temp" Upper Critical threshold to 47.000
+
+    \b
+    $ igor ipmi sensor thresh --hostname osl01 --sensor 'Ambient Temp' \
+                              --threshold 'lower' \
+                              --value 3.0 --value 3.0 --value 8.0
+    message: Locating sensor record 'Ambient Temp'...
+    Setting sensor "Ambient Temp" Lower Non-Recoverable threshold to 3.000
+    Setting sensor "Ambient Temp" Lower Critical threshold to 3.000
+    Setting sensor "Ambient Temp" Lower Non-Critical threshold to 8.000
+    """
+
+    data = json.dumps({'threshold': threshold,
+                       'values': value})
+    response = make_api_request('POST', config, '/machines/' + hostname +
+                                                '/sensors/' + quote_plus(sensor)
+                                      , data=data)
+
+    ipmi_print(response.json())
 
 ## ipmitool lan
 ## ipmitool lan set
